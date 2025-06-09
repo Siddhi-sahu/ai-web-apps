@@ -22,7 +22,7 @@
 
 //   const agentExecutor = await initializeAgentExecutorWithOptions(tools, model, {
 //   agentType: "zero-shot-react-description",
-//   verbose: true,
+//   //verbose: true,
 //   agentArgs: {
 //     prefix: `Answer the following question as best you can. You have access to the following tools:
 
