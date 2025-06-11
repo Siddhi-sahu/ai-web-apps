@@ -1,4 +1,4 @@
-import React, { use, useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 type Props = {
     messages: string[],
     pngFile: string,
@@ -11,7 +11,8 @@ const ResponseAndSources = ({messages, pngFile, maxMessages}: Props) => {
         if(messageContainerRef.current){
             messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight
         }
-    },[messages])
+    },[messages]);
+    
      return (
             <div ref={messageContainerRef}>
                 { messages && messages.length > 0 && messages.map((index, msg) =>(
