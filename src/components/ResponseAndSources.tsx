@@ -15,9 +15,9 @@ const ResponseAndSources = ({messages}: Props) => {
     },[messages]);
     
      return (
-            <div ref={messageContainerRef}>
+            <div ref={messageContainerRef} className="w-full ml-5">
                 { messages && messages.length > 0 && messages.map((message, index) =>(
-                       <Message key={index} message={message}/>
+                       <Message key={index} message={message} />
                 ))
                 }
 

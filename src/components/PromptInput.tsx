@@ -40,7 +40,7 @@ const PromptInput = ({
         />
         <Button 
         onClick={handlePromptSubmit}
-        className='ml-2'
+        className='ml-2 bg-slate-600 border-white border-2'
         disabled={disabled}>Send</Button>
 
       </div>
