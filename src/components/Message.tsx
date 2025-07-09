@@ -3,17 +3,18 @@ type SourceDocuments = {
     pageContent: string;
     metadata: Record<string, string>
 }
-type Props = {
-    message: {
+
+export type MessageType = {
         text: string,
         type: "user" | "bot",
         sourceDocuments?: SourceDocuments[]
-    },
-    pngFile: string,
-    isLast: boolean,
+}
+type Props = {
+    message: MessageType,
+    
     
 }
-const Message = ({message, pngFile, isLast}: Props) =>{
+const Message = ({message}: Props) =>{
     return (
         <div className="flex flex-col space-y-4">
             <div className="flex">
@@ -21,7 +22,18 @@ const Message = ({message, pngFile, isLast}: Props) =>{
 
             </div>
 
-            {message.sourceDocuments && message.sourceDocuments.length > 0}
+            {message.sourceDocuments && message.sourceDocuments.length > 0 && (
+                <div  className="flex flex-col space-y-2"> 
+                {message.sourceDocuments.map((source, index) => (
+                    <div key={index}>
+                        <p> Number # {index}</p>
+                        <p>{source.pageContent}</p>
+                        <pre>{JSON.stringify(source.metadata, null, 2)}</pre>
+                    </div>
+                ))}
+                </div>
+            )
+            } 
         </div>
     )
 
