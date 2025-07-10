@@ -1,8 +1,8 @@
 import {ChatOpenAI} from "@langchain/openai"
 import { BufferMemory } from "langchain/memory"
 import { ConversationChain } from "langchain/chains"
-import { NextApiRequest, NextApiResponse } from "next";
-import { NextRequest, NextResponse } from "next/server";
+import {  NextResponse } from "next/server";
+// import { v4 as uuidv4 } from "uuid";
 
 let model: ChatOpenAI;
 let memory: BufferMemory;
