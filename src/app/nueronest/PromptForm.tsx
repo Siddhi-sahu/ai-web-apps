@@ -8,6 +8,8 @@ import React, { useState } from 'react'
 const PromptForm = () => {
     const [prompt, setPrompt] = useState("");
     const [error, setError] = useState("");
+    //to avoid ai saying hello multiple times
+    const [firstMsg, setFirstMsg] = useState(true);
     const [messages, setMessages] = useState<MessageType[]>([
         {
             text: "hii i am a bot. Ask me anything",
@@ -23,8 +25,44 @@ const PromptForm = () => {
         setPrompt(e.target.value);
     }
 
-    const handlePromptSubmit = () => {
-        console.log("submit", prompt)
+    const handlePromptSubmit = async() => {
+        console.log("submit", prompt);
+
+        try{
+            const response = await fetch("/api/neuronest", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({prompt, firstMsg})
+            });
+            
+            if(!response.ok){
+                throw new Error(`An error occucured.Status: ${response.status}`)
+            };
+
+            const data = await response.json();
+            console.log(data);
+            setMessages([
+                ...messages,
+                {
+                    text: prompt,
+                    type: "user"
+                },
+                {
+                    text: data.text.response,
+                    type: "bot"
+                }
+            ]);
+
+            setPrompt("")
+            setError("")
+            setFirstMsg(false);
+
+        }catch(error){
+            console.error(error);
+            setError("Something went wrong! try again later.")
+        }
     }
 
     return (
