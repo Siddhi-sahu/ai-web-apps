@@ -18,7 +18,7 @@ const Message = ({message}: Props) =>{
     return (
         <div className="flex flex-col space-y-4">
             <div className="flex">
-            <p className={cn("max-w-[90%]", `${message.type === "user" ? "bg-zinc-800 rounded-3xl p-4 ml-auto" : ""}`)}>{message.text}</p>
+            <p className={cn("max-w-[90%]", `${message.type === "user" ? "bg-zinc-800 rounded-3xl p-4 ml-auto text-white" : ""}`)}>{message.text}</p>
 
             </div>
 
