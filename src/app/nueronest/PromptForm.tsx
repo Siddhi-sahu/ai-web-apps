@@ -14,24 +14,19 @@ const PromptForm = () => {
         {
             text: "hii i am a bot. Ask me anything",
             type: "bot"
-        },
-        {
-            text: "hii i am a user",
-            type: "user"
         }
     ]);
 
     const fetchMessages = async(sid: string) =>{
         try{
-            if(!hasfetched.current){
-                const response = await fetch(`/api/getMessages?sessionId=${sessionId}`);
+                const response = await fetch(`/api/getMessages?sessionId=${sid}`);
                 const data = await response.json();
                 console.log("data from getMessages",data);
                 if(data.messages){
-                    const formatedMessages: MessageType = data.messages.map((msg: any)=>(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const formatedMessages: MessageType[] = data.messages.map((msg: any)=>(
                         {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            text: msg.kwargs.text,
+                            text: msg.kwargs.content,
                             type: msg.id.includes("HumanMessage") ? "user": "bot",
 
                         }
@@ -39,10 +34,7 @@ const PromptForm = () => {
                     ));
                     setMessages((prevMessages) => [...prevMessages, ...formatedMessages]);
 
-                }
-
-            }
-            
+                }  
 
         }catch(e){
             console.error(e);
@@ -50,7 +42,7 @@ const PromptForm = () => {
     };
 
     useEffect(()=>{
-        if(!sessionId){
+        if(!hasfetched.current){
             const localStorageId = localStorage.getItem("sessionId");
             if(localStorageId){
                 setSessionId(localStorageId);
@@ -60,7 +52,6 @@ const PromptForm = () => {
         };
 
         hasfetched.current = true;
-        
 
     },[]);
 

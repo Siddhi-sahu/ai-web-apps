@@ -32,6 +32,8 @@ export async function GET(req: Request){
 
         const messages = await history.getMessages();
 
+        console.log("data from getMessages", messages);
+
         return NextResponse.json({ messages }, { status: 200})
      }catch(err){
         console.error(err);
