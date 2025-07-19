@@ -5,7 +5,7 @@ import PromptInput from '@/components/PromptInput'
 import ResponseAndSources from '@/components/ResponseAndSources'
 import React, { useEffect, useRef, useState } from 'react'
 
-const PromptForm = () => {
+const StreamForm = () => {
     const [prompt, setPrompt] = useState("");
     const [error, setError] = useState("");
     const [sessionId, setSessionId] = useState<string | null>(null);
@@ -62,7 +62,7 @@ const PromptForm = () => {
         console.log("submit", prompt);
 
         try{
-            const response = await fetch("/api/neuronest", {
+            const response = await fetch("/api/streaming", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -113,4 +113,4 @@ const PromptForm = () => {
     )
 }
 
-export default PromptForm
+export default StreamForm
