@@ -1,8 +1,8 @@
 "use client"
-//get messages from getMessage api => fetch all messages using session Id, format them and save it into our state => in our useEffect we set our sessionId if it exists and we also fetch new messages=> when user sends a message(conversate) we set the sessionId only if it doenot exists
 import { MessageType } from '@/components/Message'
 import PromptInput from '@/components/PromptInput'
 import ResponseAndSources from '@/components/ResponseAndSources'
+import StreamResponse from '@/components/StreamResponse'
 import React, { useEffect, useRef, useState } from 'react'
 
 const StreamForm = () => {
@@ -10,105 +10,121 @@ const StreamForm = () => {
     const [error, setError] = useState("");
     const [sessionId, setSessionId] = useState<string | null>(null);
     const hasfetched = useRef(false);
+    const [source, setSource] = useState<null | EventSource>(null);
     const [messages, setMessages] = useState<MessageType[]>([
         {
             text: "hii i am a bot. Ask me anything",
             type: "bot"
         }
     ]);
+    const [data, setData] = useState<null | string>(null);
 
-    const fetchMessages = async(sid: string) =>{
-        try{
-                const response = await fetch(`/api/getMessages?sessionId=${sid}`);
-                const data = await response.json();
-                if(data.messages){
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const formatedMessages: MessageType[] = data.messages.map((msg: any)=>(
-                        {
-                            text: msg.kwargs.content,
-                            type: msg.id.includes("HumanMessage") ? "user": "bot",
+    const sanitizeToken = (token: string) => {
+        //Replace newLine characters and quotess
+        return token.replace(/\\n/g, "\n").replace(/"/g, "");
 
-                        }
+    }
 
-                    ));
-                    setMessages((prevMessages) => [...prevMessages, ...formatedMessages]);
+    // const fetchMessages = async (sid: string) => {
+    //     try {
+    //         const response = await fetch(`/api/getMessages?sessionId=${sid}`);
+    //         const data = await response.json();
+    //         if (data.messages) {
+    //             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //             const formatedMessages: MessageType[] = data.messages.map((msg: any) => (
+    //                 {
+    //                     text: msg.kwargs.content,
+    //                     type: msg.id.includes("HumanMessage") ? "user" : "bot",
 
-                }  
+    //                 }
 
-        }catch(e){
-            console.error(e);
-        }
-    };
+    //             ));
+    //             setMessages((prevMessages) => [...prevMessages, ...formatedMessages]);
 
-    useEffect(()=>{
-        if(!hasfetched.current){
-            const localStorageId = localStorage.getItem("sessionId");
-            if(localStorageId){
-                setSessionId(localStorageId);
-                fetchMessages(localStorageId);
+    //         }
 
-            }
-        };
+    //     } catch (e) {
+    //         console.error(e);
+    //     }
+    // };
 
-        hasfetched.current = true;
+    // useEffect(() => {
+    //     if (!hasfetched.current) {
+    //         const localStorageId = localStorage.getItem("sessionId");
+    //         if (localStorageId) {
+    //             setSessionId(localStorageId);
+    //             fetchMessages(localStorageId);
 
-    },[]);
+    //         }
+    //     };
 
-    const handlePromptChange = (e: React.ChangeEvent<HTMLInputElement>) =>{
+    //     hasfetched.current = true;
+
+    // }, []);
+
+    const handlePromptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPrompt(e.target.value);
     }
 
-    const handlePromptSubmit = async() => {
-        console.log("submit", prompt);
+    const handlePromptSubmit = async () => {
 
-        try{
-            const response = await fetch("/api/streaming", {
+        try {
+            await fetch("/api/streaming", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ prompt, sessionId: localStorage.getItem("sessionId")})
+                body: JSON.stringify({ prompt, sessionId: localStorage.getItem("sessionId") })
             });
-            
-            if(!response.ok){
-                throw new Error(`An error occucured.Status: ${response.status}`);
-            };
 
-            const data = await response.json();
-            if(data.sessionId && !sessionId){
-                localStorage.setItem("sessionId", data.sessionId);
+            if (source) {
+                source.close()
             }
-            setMessages([
-                ...messages,
-                {
-                    text: prompt,
-                    type: "user"
-                },
-                {
-                    text: data.text.response,
-                    type: "bot"
-                }
-            ]);
+            const newSource = new EventSource(`/api/streaming`);
+
+            // newSource.onmessage = (event) =>{
+            //    const token = sanitizeToken(event.data);
+            //     setData(token);
+            // };
+
+            newSource.addEventListener("newToken", (event)=>{
+                const token = sanitizeToken(event.data);
+                setData(token);
+            })
+
+            newSource.addEventListener("end", ()=>{
+                newSource.close();
+            })
 
             setPrompt("")
             setError("")
 
-        }catch(error){
+        } catch (error) {
             console.error(error);
             setError("Something went wrong! try again later.")
         }
-    }
+    };
+
+    useEffect(()=>{
+        return ()=>{
+            if(source){
+                source.close();
+
+            }
+
+        }
+    },[source])
 
     return (
         <>
-        <ResponseAndSources messages={messages}/>
-        <PromptInput 
-        prompt={prompt}
-        handlePromptChange={handlePromptChange} 
-        handlePromptSubmit={handlePromptSubmit} 
-        disabled={false}
-        error={error}
-        />
+            <StreamResponse data={data}/>
+            <PromptInput
+                prompt={prompt}
+                handlePromptChange={handlePromptChange}
+                handlePromptSubmit={handlePromptSubmit}
+                disabled={false}
+                error={error}
+            />
         </>
     )
 }
