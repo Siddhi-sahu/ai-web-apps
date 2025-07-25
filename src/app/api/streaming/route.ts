@@ -1,4 +1,4 @@
-import { OpenAI } from "@langchain/openai";
+import { ChatOpenAI, OpenAI } from "@langchain/openai";
 import { NextResponse } from "next/server";
 import SSE from "express-sse";
 
@@ -18,10 +18,11 @@ export async function POST(req: Request) {
   }
 
   try {
-    const model = new OpenAI({
+    const model = new ChatOpenAI({
       model: "gpt-4o-mini",
       temperature: 0,
       streaming: true,
+      //we are gonna recieve a tokem from openai as a callback and we are gonna send it through our sse package to the client with a custom event   ; straming: true makes openai send tokens and not wait for the full response
       callbacks: [
         {
             handleLLMNewToken(token: string){
@@ -32,11 +33,17 @@ export async function POST(req: Request) {
       ]
     });
 
-    // return NextResponse.json({ text : response },
-    //     {
-    //         status: 200
-    //     }
-    // )
+    //.then since .invoke returns a promise string; which means when the invoke is successfull we send an event to the frontend
+    model.invoke(prompt).then(()=>{
+      sse.send(null, "end")
+
+    })
+
+    return NextResponse.json({ result : "OK" },
+        {
+            status: 200
+        }
+    )
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -45,3 +52,7 @@ export async function POST(req: Request) {
     );
   }
 }
+
+// export async function GET(){
+//   return NextResponse((RES))
+// }
